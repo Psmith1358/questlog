@@ -1,0 +1,22 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>QuestLog</h1>
+<p class="lead">Complete tasks, earn XP, level up, and unlock badges.</p>
+
+@if (Model.CurrentUser != null)
+{
+    <div class="card" style="max-width: 24rem">
+        <div class="card-body">
+            <h5 class="card-title">@Model.CurrentUser.UserName</h5>
+            <p class="card-text">Level @Model.CurrentUser.Level &middot; @Model.CurrentUser.TotalXp XP &middot; @Model.CurrentUser.CurrentStreak day streak</p>
+        </div>
+    </div>
+}
+else
+{
+    <p>Log in with a sample account (alex, sam, or jordan / Test123!) or register a new one.</p>
+}
