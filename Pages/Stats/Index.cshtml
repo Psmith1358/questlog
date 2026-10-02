@@ -1,0 +1,178 @@
+@page
+@model QuestLog.Pages.Stats.IndexModel
+@{
+    ViewData["Title"] = "Stats";
+}
+
+<h1>My Stats</h1>
+<p class="text-muted">Track your progress and level up.</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Level</h5>
+                <h2>@Model.Level</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total XP</h5>
+                <h2>@Model.TotalXp XP</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Next Level</h5>
+                <h2>@Model.XpNeededForNextLevel XP</h2>
+                <p class="mb-0">needed to reach Level @(Model.Level + 1)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Progress to Level @(Model.Level + 1)</h4>
+
+<div class="progress" style="height: 25px;">
+    <div class="progress-bar"
+         role="progressbar"
+         style="width: @(Model.XpIntoLevel)%;">
+        @Model.XpIntoLevel / 100 XP
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h4>Task Performance</h4>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Current Streak</h5>
+                <h2>@Model.CurrentStreak @(Model.CurrentStreak == 1 ? "day" : "days")</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Tasks Completed</h5>
+                <h2>@Model.CompletedTasks / @Model.TotalTasks</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Completion Rate</h5>
+                <h2>@Model.CompletionRate.ToString("0.0")%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4" />
+
+<h4>Completion by Category</h4>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Completed</th>
+                <th>Completion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in Model.CategoryStats)
+            {
+                <tr>
+                    <td>@category.CategoryName</td>
+                    <td>@category.CompletedTasks / @category.TotalTasks</td>
+                    <td>
+                        <div class="progress" style="height: 22px;">
+                            <div class="progress-bar"
+                                 role="progressbar"
+                                 style="width: @(category.CompletionRate)%;">
+                                @category.CompletionRate.ToString("0.0")%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<hr class="my-4" />
+
+<h4>XP Earned Over Time</h4>
+<p class="text-muted">XP earned from completed tasks by date.</p>
+
+@if (Model.DailyXpStats.Any())
+{
+    var maxXp = Model.DailyXpStats.Max(x => x.XpEarned);
+
+    <div class="mt-3">
+        @foreach (var day in Model.DailyXpStats)
+        {
+            var barWidth = maxXp == 0
+                ? 0
+                : (double)day.XpEarned / maxXp * 100;
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span>@day.Date.ToString("MMM d, yyyy")</span>
+                    <strong>@day.XpEarned XP</strong>
+                </div>
+
+                <div class="progress" style="height: 24px;">
+                    <div class="progress-bar"
+                         role="progressbar"
+                         style="width: @barWidth%;">
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No XP history yet. Complete some tasks to earn XP!</p>
+}
+
+<hr class="my-4" />
+
+<h4>Earned Badges</h4>
+<p class="text-muted">Badges unlocked from your QuestLog progress.</p>
+
+@if (Model.EarnedBadges.Any())
+{
+    <div class="row">
+        @foreach (var badge in Model.EarnedBadges)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">🏆 @badge.Name</h5>
+                        <p class="card-text">@badge.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No badges earned yet. Complete tasks to unlock badges!</p>
+}
