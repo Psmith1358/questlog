@@ -19,6 +19,14 @@ public class IndexModel : PageModel
     public int XpIntoLevel { get; set; }
     public int XpNeededForNextLevel { get; set; }
 
+    public int CurrentStreak { get; set; }
+    public int TotalTasks { get; set; }
+    public int CompletedTasks { get; set; }
+    public double CompletionRate { get; set; }
+
+    public List<CategoryStat> CategoryStats { get; set; } = new();
+    public List<DailyXpStat> DailyXpStats { get; set; } = new();
+
     public async Task OnGetAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -40,5 +48,64 @@ public class IndexModel : PageModel
         Level = user.Level;
         XpIntoLevel = user.TotalXp % 100;
         XpNeededForNextLevel = 100 - XpIntoLevel;
+
+        CurrentStreak = user.CurrentStreak;
+
+        var userTasks = await _context.Tasks
+            .Where(t => t.UserId == userId)
+            .Include(t => t.Category)
+            .ToListAsync();
+
+        TotalTasks = userTasks.Count;
+
+        CompletedTasks = userTasks.Count(
+            t => t.Status == QuestLog.Models.TaskStatus.Done);
+
+        CompletionRate = TotalTasks == 0
+            ? 0
+            : (double)CompletedTasks / TotalTasks * 100;
+
+        CategoryStats = userTasks
+            .GroupBy(t => t.Category?.Name ?? "Uncategorized")
+            .Select(group => new CategoryStat
+            {
+                CategoryName = group.Key,
+                TotalTasks = group.Count(),
+                CompletedTasks = group.Count(
+                    t => t.Status == QuestLog.Models.TaskStatus.Done)
+            })
+            .OrderBy(stat => stat.CategoryName)
+            .ToList();
+
+        DailyXpStats = userTasks
+            .Where(t =>
+                t.Status == QuestLog.Models.TaskStatus.Done &&
+                t.CompletedAt.HasValue)
+            .GroupBy(t => t.CompletedAt!.Value.Date)
+            .Select(group => new DailyXpStat
+            {
+                Date = group.Key,
+                XpEarned = group.Sum(t => t.XpValue)
+            })
+            .OrderBy(stat => stat.Date)
+            .ToList();
     }
+}
+
+   public class CategoryStat
+{
+    public string CategoryName { get; set; } = string.Empty;
+    public int TotalTasks { get; set; }
+    public int CompletedTasks { get; set; }
+
+    public double CompletionRate =>
+        TotalTasks == 0
+            ? 0
+            : (double)CompletedTasks / TotalTasks * 100;
+}
+
+    public class DailyXpStat
+{
+    public DateTime Date { get; set; }
+    public int XpEarned { get; set; }
 }
