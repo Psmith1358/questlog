@@ -56,7 +56,7 @@
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Current Streak</h5>
-                <h2>@Model.CurrentStreak days</h2>
+                <h2>@Model.CurrentStreak @(Model.CurrentStreak == 1 ? "day" : "days")</h2>
             </div>
         </div>
     </div>
