@@ -1,0 +1,80 @@
+@page
+@model QuestLog.Pages.Tasks.IndexModel
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<h1>My Tasks</h1>
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input asp-for="SearchString"
+               class="form-control"
+               placeholder="Search tasks by title" />
+
+        <button type="submit" class="btn btn-primary">Search</button>
+
+        <a asp-page="./Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+<p>
+    <a asp-page="Create">Create Task</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Due Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.TaskItem)
+        {
+            <tr>
+                <td>
+                    @item.Title
+                </td>
+
+                <td>
+                    @item.DueDate?.ToShortDateString()
+                </td>
+
+                <td>
+                    @item.Priority
+                </td>
+
+                <td>
+                    @item.Status
+                </td>
+
+                <td>
+                    @(item.Category?.Name ?? "Uncategorized")
+                </td>
+
+                <td>
+                    @if (item.Status != QuestLog.Models.TaskStatus.Done)
+                    {
+                        <form method="post"
+                              asp-page-handler="MarkComplete"
+                              asp-route-id="@item.Id"
+                              class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Mark Complete
+                            </button>
+                        </form>
+                    }
+
+                    <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

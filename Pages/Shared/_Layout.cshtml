@@ -12,6 +12,9 @@
             <a class="navbar-brand" asp-page="/Index">QuestLog</a>
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" asp-page="/Index">Home</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-page="/Tasks/Index">My Tasks</a>
+                </li>
                 @* Add nav links here as pages get built: Tasks (B), Profile (A), Stats (C) *@
             </ul>
             <partial name="_LoginPartial" />
