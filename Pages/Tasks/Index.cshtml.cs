@@ -5,16 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using QuestLog.Models;
 using QuestLog.Data;
 using System.ComponentModel;
+using QuestLog.Services;
 
 namespace QuestLog.Pages.Tasks;
 
 public class IndexModel : PageModel
 {
     private readonly ApplicationDbContext _context;
+    private readonly GamificationService _gamification;
 
-    public IndexModel(ApplicationDbContext context)
+    public IndexModel(
+        ApplicationDbContext context,
+        GamificationService gamification)
     {
-        _context = context;
+    _context = context;
+    _gamification = gamification;
     }
 
     public IList<TaskItem> TaskItem { get; set; } = default!;
@@ -41,19 +46,17 @@ public class IndexModel : PageModel
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var task = await _context.Tasks
-            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+        if (userId == null)
+        {
+            return Challenge();
+        }
 
-        if (task is null)
+        var completed = await _gamification.CompleteTaskAsync(id, userId);
+
+        if (!completed)
         {
             return NotFound();
         }
-
-        task.Status = QuestLog.Models.TaskStatus.Done;
-        task.CompletedAt = DateTime.Now;
-
-        await _context.SaveChangesAsync();
-
         return RedirectToPage("./Index");
     }
 }
