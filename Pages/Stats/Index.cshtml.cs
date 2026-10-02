@@ -26,6 +26,7 @@ public class IndexModel : PageModel
 
     public List<CategoryStat> CategoryStats { get; set; } = new();
     public List<DailyXpStat> DailyXpStats { get; set; } = new();
+    public List<QuestLog.Models.Badge> EarnedBadges { get; set; } = new();
 
     public async Task OnGetAsync()
     {
@@ -89,7 +90,15 @@ public class IndexModel : PageModel
             })
             .OrderBy(stat => stat.Date)
             .ToList();
-    }
+
+        EarnedBadges = await _context.UserBadges
+            .Where(ub => ub.UserId == userId)
+            .Include(ub => ub.Badge)
+            .Where(ub => ub.Badge != null)
+            .Select(ub => ub.Badge!)
+            .OrderBy(b => b.Name)
+            .ToListAsync();  
+        }
 }
 
    public class CategoryStat
